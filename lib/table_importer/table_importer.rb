@@ -58,7 +58,7 @@ module TableImporter
     def build_reflections_for_object(reflections, object, row)
       reflections.each do |reflection_name, reflection|
         if reflection[:macro] == :has_many
-          collection = reflection[:attributes].inject([]){|a,v| v.last.size.times{|i| a[i]||={};a[i][:attributes] = {v.first=>v.last[i]} } ;a }.map do |attributes|
+          collection = reflection[:attributes].inject([]){|a,v| v.last.size.times{|i| a[i]||={:attributes=>{}};a[i][:attributes].merge! ({v.first=>v.last[i]}) } ;a }.map do |attributes|
             build_object_for_attributes(reflection[:class_name], attributes, row)
           end
           object.send("#{reflection_name}=",collection)
@@ -118,7 +118,7 @@ module TableImporter
 
 
     def get_column_number(col)
-      col = col.to_s[/^col_?([A-Z]+|\d+)$/, 1]
+      col = col.to_s[/^col_?([A-Za-z]+|\d+)$/, 1]
       if col.to_i == 0
         col =col.split(//).inject(-25) { |i, w| i += (("A".."Z").to_a.index(w) || ("a".."z").to_a.index(w)) +26 }
       end

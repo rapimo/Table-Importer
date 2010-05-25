@@ -95,13 +95,14 @@ describe "TableImporter "do
       @user = User.new("Ann",@address)
       @contact.user = @user
 
-      @tags = [Tag.new("Friends"),Tag.new("School"),Tag.new("Private")]
+      @tags = [Tag.new("Friends","Today"),Tag.new("School","Today"),Tag.new("Private","Today")]
       @address.tags = @tags
 
-      @dict = {"Contact" =>{:first_name=>:col1,:user => {:name=>:col5, :address => {:street=>:col2,:zip=>:col3,:city=>:col4 ,:tags => {:tagging=>[:col6,:col7,:col8]}}}}}
+      @dict = {"Contact" =>{:first_name=>:col1,:user => {:name=>:col5, :address => {:street=>:col2,:zip=>:col3,:city=>:col4 ,
+                                                     :tags => {:tagging=>[:col6,:col8,:col10],:created_at=>[:col7,:col9,:col11]}}}}}
       @mapper = TableImporter::Mapper.new(@dict)
 
-      @data = [["Bob","First Avenue","12345","New York","Ann","Friends","School","Private"]]
+      @data = [["Bob","First Avenue","12345","New York","Ann","Friends","Today","School","Today","Private","Today"]]
       @importer = TableImporter::Importer.new
       @importer.data =@data
       @importer.mapper = @mapper

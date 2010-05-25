@@ -43,10 +43,10 @@ describe "TableImporter::Mapper" do
         @mapper.get_column_number(:col_AB).should == 27
     end
     it "should assign col_ab to 25" do
-        @mapper.get_column_number(:col_AB).should == 27
+        @mapper.get_column_number(:col_ab).should == 27
     end
     it "should assign col_aB to 25" do
-        @mapper.get_column_number(:col_AB).should == 27
+        @mapper.get_column_number(:col_aB).should == 27
     end
 
     it "should assign col_27 to 26" do
