@@ -12,15 +12,18 @@ With these Table Importer you are able to import any legacy Data and map it easi
 
 === Usage
 
-* get your Data as nested Array in rows ans columns
+* get your Data as nested Array in rows and columns
 * build a dictionary to map your data to your Classes
-* {"ClassName"=>attributes}
+   {"ClassName"=>attributes}
 where attributes is a hash of of objects attributes and its corresponding columns
-* attributes = {:attribute=>:col_1}
+   attributes = {:attribute=>:col_1}
 * you can use number or letters eg. :col1, :col_1, :col_A, :colB, :col_AB, :col_aa etc.
-* for pre processing data use array with a lambda as last element (:attribute => [:co_l,col_2,lambda{|col1,col2| col1 +" " +col2 }]
-* use constant values :attribute=> "My Value"
-* for associations user Hashes :association => {:attribute=>:col1}
+* for pre processing data use array with a lambda as last element
+   :attribute => [:co_l,col_2,lambda{|col1,col2| col1 +" " +col2 }]
+* use constant values
+   :attribute=> "My Value"
+* for associations user Hashes
+   :association => {:attribute=>:col1}
 * Build the Mapper by passing the dictonary
    mapper = TableImporter::Mapper.new(dictonary)
 * Build the Importer by passing the data and the mapper
@@ -31,12 +34,12 @@ where attributes is a hash of of objects attributes and its corresponding column
 
 === Note
 
-The the Objects are only build not saved so you can post process them before saving.
+The Objects are only build not saved so you can post process them before saving.
 
 
 === Example
 
-Assume you hab the follwoing Tabluar Data (e.g. from a CVS File with CSV.read("your_file.csv"))
+Assume you have the follwoing Tabluar Data (e.g. from a CVS File with CSV.read("your_file.csv"))
 
    data=
    [
@@ -47,25 +50,20 @@ Assume you hab the follwoing Tabluar Data (e.g. from a CVS File with CSV.read("y
 And you have the follwoing simple Data Structure
 
    Class Contact < ActiveRecord::Base
-
      # first_name  String (column1)
      # last_name   String (column2)
      # full_name   String (column1 column2)
      has_many :tags
      belongs_to :user
      has_one :address
-
    end
 
    Class Tag < ActiveRecord::Base
-
      #tagging String (column 8, 9 and 10)
      belongs_to :contact
-
    end
 
    Class User < ActiveRecord::Base
-
      # name String  (column 6)
      has_many :contacts
      has_one :group
@@ -76,14 +74,12 @@ And you have the follwoing simple Data Structure
    end
 
    Class Address
-
     # street    String  (column3)
     # number    Integer (RegEx Number Part of column3)
     # zip       String  (column4)
     # city      String  (column5)
     # country   String  ('USA' constant for the import)
     belongs_to :contact
-
    end
 
 You can build your Data as follows
@@ -93,7 +89,7 @@ You can build your Data as follows
    dictonary = {"Contact" =>{:first_name=>:col_1,:last_name=>:col_2,:full_name=>[:col_1,:col_2,lambda{|f,l| "#{v} #{l}"}],
                             # has_many associations you have three tags here
                             :tags=>{:tagging => [:col_8,:col_9,:col_10]},
-                            # belongs_to
+                            # nested belongs_to
                             :user => {:name=>:col_6,:group=>{:name=>:col_7}},
                             # has_one
                             :address => {:street=>[:col_3,lambda{|s| s[/(.*?) ([\d]+)/,1]}],
