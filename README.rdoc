@@ -1,0 +1,132 @@
+=== an awesome Table Importer
+
+Importing Legacy Tabluar Data e.g. from cvs Files always sucks.
+With these Table Importer you are able to import any legacy Data and map it easily to any (e.g.ActiveRecord) Objects
+
+=== Features
+
+* Nested Objects
+* Supports Active Record Associations (has_one, belongs_to, has_many
+* Easy converting of Data with Procs
+
+
+=== Usage
+
+* get your Data as nested Array in rows ans columns
+* build a dictionary to map your data to your Classes
+* {"ClassName"=>attributes}
+where attributes is a hash of of objects attributes and its corresponding columns
+* attributes = {:attribute=>:col_1}
+* you can use number or letters eg. :col1, :col_1, :col_A, :colB, :col_AB, :col_aa etc.
+* for pre processing data use array with a lambda as last element (:attribute => [:co_l,col_2,lambda{|col1,col2| col1 +" " +col2 }]
+* use constant values :attribute=> "My Value"
+* for associations user Hashes :association => {:attribute=>:col1}
+* Build the Mapper by passing the dictonary
+   mapper = TableImporter::Mapper.new(dictonary)
+* Build the Importer by passing the data and the mapper
+   importer = TableImporter:Importer.new(data,mapper)
+* build
+   result = importer.build
+* you get your result as nested Array [FirstRow [First First Level Object,Second First Level Object],Second Row [...] ]   
+
+=== Note
+
+The the Objects are only build not saved so you can post process them before saving.
+
+
+=== Example
+
+Assume you hab the follwoing Tabluar Data (e.g. from a CVS File with CSV.read("your_file.csv"))
+
+   data=
+   [
+    # we have only one row in this example
+    ["Bob","Marley","First Avenue 23","12345","New York","Ann","Admins","School","Friends","Private"]
+   ]
+   
+And you have the follwoing simple Data Structure
+
+   Class Contact < ActiveRecord::Base
+
+     # first_name  String (column1)
+     # last_name   String (column2)
+     # full_name   String (column1 column2)
+     has_many :tags
+     belongs_to :user
+     has_one :address
+
+   end
+
+   Class Tag < ActiveRecord::Base
+
+     #tagging String (column 8, 9 and 10)
+     belongs_to :contact
+
+   end
+
+   Class User < ActiveRecord::Base
+
+     # name String  (column 6)
+     has_many :contacts
+     has_one :group
+   end
+
+   Class Group
+     # name String  (column 7)   
+   end
+
+   Class Address
+
+    # street    String  (column3)
+    # number    Integer (RegEx Number Part of column3)
+    # zip       String  (column4)
+    # city      String  (column5)
+    # country   String  ('USA' constant for the import)
+    belongs_to :contact
+
+   end
+
+You can build your Data as follows
+
+* first we setup our dictonary hash
+
+   dictonary = {"Contact" =>{:first_name=>:col_1,:last_name=>:col_2,:full_name=>[:col_1,:col_2,lambda{|f,l| "#{v} #{l}"}],
+                            # has_many associations you have three tags here
+                            :tags=>{:tagging => [:col_8,:col_9,:col_10]},
+                            # belongs_to
+                            :user => {:name=>:col_6,:group=>{:name=>:col_7}},
+                            # has_one
+                            :address => {:street=>[:col_3,lambda{|s| s[/(.*?) ([\d]+)/,1]}],
+                                        :number=>[:col_3,lambda{|s| s[/(.*?) ([\d]+)/,2]}],
+                                        :zip=>:col_4,:city=>:col_5,:country=>"USA"
+                                      }
+                            }
+                }
+* now we create a new mapper Object, passing the dictonary
+
+   mapper = TableImporter::Mapper.new(dictonary)
+
+* and an Importer Object passing the data
+
+   importer = TableImporter:Importer.new(data,mapper)
+   result = importer.build
+
+* it should return the processed objects
+
+   => [[#<Contact first_name="Bob",last_name="Marley",full_name="Bob Marley",
+                  tags=[#<Tag tagging="Private">,#<Tag tagging="School">,#<Tag tagging="Friends">],
+                  address=#<Address street="First Avenue",number=23,zip="12345",city="New York",country="USA">
+                  user =#<User name="Ann",group=#<Group name="Admin"> >    ]]
+
+=== License
+
+Copyright (c) 2010 by Manuel Kniep. All rights reserved.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.
